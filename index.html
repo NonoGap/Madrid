@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Madrid</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e10;
+      --surface: #18181c;
+      --border: #2a2a30;
+      --text: #e8e8e0;
+      --muted: #5a5a68;
+      --resto: #ff4444;
+      --courses: #44cc66;
+      --sympa: #4488ff;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+      flex-shrink: 0;
+    }
+
+    .topbar h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .topbar h1 span { color: var(--sympa); }
+
+    .filters { display: flex; gap: 6px; }
+    .filter-btn {
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active-resto   { background: var(--resto);   color: #fff; border-color: var(--resto); }
+    .filter-btn.active-courses { background: var(--courses); color: #fff; border-color: var(--courses); }
+    .filter-btn.active-sympa  { background: var(--sympa);  color: #fff; border-color: var(--sympa); }
+    .filter-btn.active-all    { background: var(--text);    color: var(--bg); border-color: var(--text); }
+
+    /* Map */
+    #map { flex: 1; z-index: 0; }
+
+    /* Add mode hint */
+    .add-hint {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 18px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      z-index: 1000;
+      display: none;
+      white-space: nowrap;
+    }
+    .add-hint.visible { display: block; }
+
+    /* FAB */
+    .fab {
+      position: fixed;
+      bottom: 28px;
+      right: 20px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--sympa);
+      border: none;
+      color: #fff;
+      font-size: 26px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .fab:hover { transform: scale(1.08); }
+    .fab.active { background: #ff4f4f; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 2000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.hidden { display: none; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px 16px 0 0;
+      padding: 24px 20px 36px;
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .modal input, .modal textarea, .modal select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal input:focus, .modal textarea:focus, .modal select:focus { border-color: var(--sympa); }
+    .modal textarea { resize: vertical; min-height: 70px; }
+    .modal select option { background: var(--surface); }
+
+    .modal-actions { display: flex; gap: 8px; }
+    .btn-save {
+      flex: 1;
+      padding: 12px;
+      background: var(--sympa);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-save:hover { opacity: 0.85; }
+    .btn-cancel {
+      padding: 12px 20px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* Marker colors */
+    .marker-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    /* Leaflet popup custom */
+    .leaflet-popup-content-wrapper {
+      background: var(--surface) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 10px !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+    }
+    .leaflet-popup-tip { background: var(--surface) !important; }
+    .popup-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .popup-cat  { font-family: 'DM Mono', monospace; font-size: 11px; margin-bottom: 6px; }
+    .popup-note { font-size: 12px; color: #aaa; margin-bottom: 8px; line-height: 1.4; }
+    .popup-del  {
+      background: none;
+      border: 1px solid #ff4f4f;
+      color: #ff4f4f;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'DM Mono', monospace;
+      transition: background 0.15s;
+    }
+    .popup-del:hover { background: rgba(255,79,79,0.12); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      transition: transform 0.3s ease;
+      z-index: 3000;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Ma<span>drid</span></h1>
+  <div class="filters">
+    <button class="filter-btn active-all" onclick="setFilter('all', this)">Tous</button>
+    <button class="filter-btn" onclick="setFilter('resto', this)">🍽 Restos</button>
+    <button class="filter-btn" onclick="setFilter('courses', this)">🛒 Courses</button>
+    <button class="filter-btn" onclick="setFilter('sympa', this)">⭐ Sympa</button>
+  </div>
+</div>
+
+<div id="map"></div>
+<div class="add-hint" id="addHint">Touche la carte pour placer un endroit</div>
+
+<button class="fab" id="fab" onclick="toggleAddMode()" title="Ajouter un endroit">＋</button>
+
+<!-- Modal ajout -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">Nouvel endroit</div>
+    <input type="text" id="placeName" placeholder="Nom…">
+    <select id="placeCat">
+      <option value="resto">🍽 Restaurant</option>
+      <option value="courses">🛒 Courses</option>
+      <option value="sympa">⭐ Endroit sympa</option>
+    </select>
+    <textarea id="placeNote" placeholder="Notes (optionnel)…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="savePlace()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, deleteDoc,
+    doc, onSnapshot, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyD4zRLZ4VzsI9HVU-OJVv_m89lqRrKjp7w",
+    authDomain:        "madrid-705fe.firebaseapp.com",
+    projectId:         "madrid-705fe",
+    storageBucket:     "madrid-705fe.firebasestorage.app",
+    messagingSenderId: "951836306012",
+    appId:             "1:951836306012:web:64bf3fae67499ed2ef9499"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const col = collection(db, "places");
+
+  // ── Map ──────────────────────────────────────────────────────────────────
+  const map = L.map('map').setView([40.4168, -3.7038], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  // ── State ────────────────────────────────────────────────────────────────
+  let addMode    = false;
+  let pendingLatLng = null;
+  let currentFilter = 'all';
+  let markers = {};
+
+  const catColors = { resto: '#ff4444', courses: '#44cc66', sympa: '#4488ff' };
+  const catLabels = { resto: '🍽 Restaurant', courses: '🛒 Courses', sympa: '⭐ Sympa' };
+
+  // ── Add mode ─────────────────────────────────────────────────────────────
+  window.toggleAddMode = function() {
+    addMode = !addMode;
+    document.getElementById('fab').classList.toggle('active', addMode);
+    document.getElementById('addHint').classList.toggle('visible', addMode);
+    map.getContainer().style.cursor = addMode ? 'crosshair' : '';
+  };
+
+  map.on('click', (e) => {
+    if (!addMode) return;
+    pendingLatLng = e.latlng;
+    document.getElementById('placeName').value = '';
+    document.getElementById('placeNote').value = '';
+    document.getElementById('placeCat').value = 'resto';
+    document.getElementById('modalOverlay').classList.remove('hidden');
+  });
+
+  // ── Modal ────────────────────────────────────────────────────────────────
+  window.closeModal = function() {
+    document.getElementById('modalOverlay').classList.add('hidden');
+    pendingLatLng = null;
+  };
+
+  window.savePlace = async function() {
+    const name = document.getElementById('placeName').value.trim();
+    const cat  = document.getElementById('placeCat').value;
+    const note = document.getElementById('placeNote').value.trim();
+    if (!name || !pendingLatLng) return;
+    try {
+      await addDoc(col, {
+        name, cat, note,
+        lat: pendingLatLng.lat,
+        lng: pendingLatLng.lng,
+        createdAt: serverTimestamp()
+      });
+      closeModal();
+      toggleAddMode();
+      showToast('Endroit ajouté ✓');
+    } catch(e) { showToast('Erreur : ' + e.message); }
+  };
+
+  // ── Filter ───────────────────────────────────────────────────────────────
+  window.setFilter = function(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.className = 'filter-btn');
+    btn.classList.add('active-' + filter);
+    Object.entries(markers).forEach(([id, { marker, cat }]) => {
+      if (filter === 'all' || filter === cat) marker.addTo(map);
+      else map.removeLayer(marker);
+    });
+  };
+
+  // ── Marker factory ───────────────────────────────────────────────────────
+  function makeIcon(cat) {
+    const color = catColors[cat] || '#888';
+    return L.divIcon({
+      className: '',
+      html: `<div class="marker-dot" style="background:${color};width:18px;height:18px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>`,
+      iconSize: [18, 18],
+      iconAnchor: [9, 9],
+      popupAnchor: [0, -12]
+    });
+  }
+
+  // ── Delete ───────────────────────────────────────────────────────────────
+  window.deletePlace = async function(id) {
+    if (!confirm('Supprimer cet endroit ?')) return;
+    await deleteDoc(doc(db, 'places', id));
+    showToast('Endroit supprimé');
+  };
+
+  // ── Realtime ─────────────────────────────────────────────────────────────
+  onSnapshot(col, (snapshot) => {
+    snapshot.docChanges().forEach(change => {
+      const id = change.doc.id;
+      const d  = change.doc.data();
+
+      if (change.type === 'removed') {
+        if (markers[id]) { map.removeLayer(markers[id].marker); delete markers[id]; }
+        return;
+      }
+
+      if (change.type === 'added') {
+        const marker = L.marker([d.lat, d.lng], { icon: makeIcon(d.cat) });
+        marker.bindPopup(`
+          <div class="popup-name">${escHtml(d.name)}</div>
+          <div class="popup-cat" style="color:${catColors[d.cat]}">${catLabels[d.cat] || d.cat}</div>
+          ${d.note ? `<div class="popup-note">${escHtml(d.note)}</div>` : ''}
+          <button class="popup-del" onclick="deletePlace('${id}')">Supprimer</button>
+        `);
+        if (currentFilter === 'all' || currentFilter === d.cat) marker.addTo(map);
+        markers[id] = { marker, cat: d.cat };
+      }
+    });
+  });
+
+  // ── Utils ────────────────────────────────────────────────────────────────
+  function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  let toastTimer;
+  window.showToast = function(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  };
+</script>
+</body>
+</html>
