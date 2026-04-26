@@ -272,9 +272,9 @@
   <h1>Ma<span>drid</span></h1>
   <div class="filters">
     <button class="filter-btn active-all" onclick="setFilter('all', this)">Tous</button>
-    <button class="filter-btn" onclick="setFilter('resto', this)">🍽</button>
-    <button class="filter-btn" onclick="setFilter('courses', this)">🛒</button>
-    <button class="filter-btn" onclick="setFilter('sympa', this)">⭐</button>
+    <button class="filter-btn" onclick="setFilter('resto', this)">🍽 Restos</button>
+    <button class="filter-btn" onclick="setFilter('courses', this)">🛒 Courses</button>
+    <button class="filter-btn" onclick="setFilter('sympa', this)">⭐ Sympa</button>
   </div>
 </div>
 
@@ -396,7 +396,8 @@
     const name = document.getElementById('placeName').value.trim();
     const cat  = document.getElementById('placeCat').value;
     const note = document.getElementById('placeNote').value.trim();
-    if (!name || !pendingLatLng) return;
+    if (!name) { showToast('Saisis un nom !'); return; }
+    if (!pendingLatLng) { showToast('Clique sur la carte d\'abord'); return; }
     try {
       await addDoc(col, {
         name, cat, note,
@@ -406,7 +407,7 @@
         createdAt: serverTimestamp()
       });
       closeModal();
-      toggleAddMode();
+      if (addMode) toggleAddMode();
       showToast('Endroit ajouté ✓');
     } catch(e) { showToast('Erreur : ' + e.message); }
   };
@@ -426,12 +427,16 @@
   // ── Marker ────────────────────────────────────────────────────────────────
   function makeIcon(cat) {
     const color = catColors[cat] || '#888';
+    const svg = `<svg width="28" height="36" viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 22 14 22S28 24.5 28 14C28 6.268 21.732 0 14 0z" fill="${color}"/>
+      <circle cx="14" cy="14" r="6" fill="white"/>
+    </svg>`;
     return L.divIcon({
       className: '',
-      html: `<div style="background:${color};width:18px;height:18px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>`,
-      iconSize: [18, 18],
-      iconAnchor: [9, 9],
-      popupAnchor: [0, -14]
+      html: svg,
+      iconSize: [28, 36],
+      iconAnchor: [14, 36],
+      popupAnchor: [0, -36]
     });
   }
 
@@ -502,6 +507,10 @@
           ${d.note ? `<div class="popup-note">${escHtml(d.note)}</div>` : ''}
           <button class="popup-del" onclick="deletePlace('${id}')">Supprimer</button>
         `);
+        marker.bindTooltip(
+          `<strong>${escHtml(d.name)}</strong>${d.note ? '<br><span style="color:#aaa;font-size:11px">' + escHtml(d.note) + '</span>' : ''}`,
+          { direction: 'top', offset: [0, -36] }
+        );
         if (currentFilter === 'all' || currentFilter === d.cat) marker.addTo(map);
         markers[id] = { marker, cat: d.cat };
         places.push({ id, ...d });
