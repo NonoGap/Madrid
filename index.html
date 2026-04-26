@@ -19,6 +19,7 @@
       --resto: #ff4444;
       --courses: #44cc66;
       --sympa: #4488ff;
+      --star: #f59e0b;
     }
 
     body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -28,32 +29,30 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
+      padding: 10px 14px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       z-index: 1000;
       flex-shrink: 0;
     }
-
-    .topbar h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .topbar h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
     .topbar h1 span { color: var(--sympa); }
-
-    .filters { display: flex; gap: 6px; }
+    .filters { display: flex; gap: 5px; }
     .filter-btn {
-      padding: 5px 12px;
+      padding: 4px 10px;
       border-radius: 20px;
       border: 1px solid var(--border);
       background: none;
       color: var(--muted);
       font-family: 'DM Mono', monospace;
-      font-size: 11px;
+      font-size: 10px;
       cursor: pointer;
       transition: all 0.2s;
     }
     .filter-btn.active-resto   { background: var(--resto);   color: #fff; border-color: var(--resto); }
     .filter-btn.active-courses { background: var(--courses); color: #fff; border-color: var(--courses); }
-    .filter-btn.active-sympa  { background: var(--sympa);  color: #fff; border-color: var(--sympa); }
-    .filter-btn.active-all    { background: var(--text);    color: var(--bg); border-color: var(--text); }
+    .filter-btn.active-sympa   { background: var(--sympa);  color: #fff; border-color: var(--sympa); }
+    .filter-btn.active-all     { background: var(--text);   color: var(--bg); border-color: var(--text); }
 
     /* Map */
     #map { flex: 1; z-index: 0; }
@@ -61,15 +60,15 @@
     /* Add mode hint */
     .add-hint {
       position: fixed;
-      top: 70px;
+      top: 60px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 8px 18px;
+      padding: 7px 16px;
       font-family: 'DM Mono', monospace;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text);
       z-index: 1000;
       display: none;
@@ -80,17 +79,17 @@
     /* FAB */
     .fab {
       position: fixed;
-      bottom: 28px;
-      right: 20px;
-      width: 52px;
-      height: 52px;
+      bottom: 220px;
+      right: 16px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background: var(--sympa);
       border: none;
       color: #fff;
-      font-size: 26px;
+      font-size: 24px;
       cursor: pointer;
-      z-index: 1000;
+      z-index: 600;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
       display: flex;
       align-items: center;
@@ -111,31 +110,24 @@
       justify-content: center;
     }
     .modal-overlay.hidden { display: none; }
-
     .modal {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 16px 16px 0 0;
-      padding: 24px 20px 36px;
+      padding: 20px 18px 32px;
       width: 100%;
       max-width: 500px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
-
-    .modal-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
+    .modal-title { font-size: 15px; font-weight: 700; }
     .modal input, .modal textarea, .modal select {
       width: 100%;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 11px 14px;
+      padding: 10px 13px;
       color: var(--text);
       font-family: 'Syne', sans-serif;
       font-size: 14px;
@@ -143,13 +135,27 @@
       transition: border-color 0.2s;
     }
     .modal input:focus, .modal textarea:focus, .modal select:focus { border-color: var(--sympa); }
-    .modal textarea { resize: vertical; min-height: 70px; }
+    .modal textarea { resize: vertical; min-height: 60px; }
     .modal select option { background: var(--surface); }
 
-    .modal-actions { display: flex; gap: 8px; }
+    /* Stars */
+    .star-row { display: flex; gap: 6px; }
+    .star-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      color: var(--border);
+      transition: color 0.15s, transform 0.15s;
+      padding: 0;
+    }
+    .star-btn.active { color: var(--star); }
+    .star-btn:hover { transform: scale(1.2); }
+
+    .modal-actions { display: flex; gap: 8px; margin-top: 4px; }
     .btn-save {
       flex: 1;
-      padding: 12px;
+      padding: 11px;
       background: var(--sympa);
       color: #fff;
       border: none;
@@ -162,7 +168,7 @@
     }
     .btn-save:hover { opacity: 0.85; }
     .btn-cancel {
-      padding: 12px 20px;
+      padding: 11px 18px;
       background: none;
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -172,16 +178,7 @@
       cursor: pointer;
     }
 
-    /* Marker colors */
-    .marker-dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    }
-
-    /* Leaflet popup custom */
+    /* Leaflet popup */
     .leaflet-popup-content-wrapper {
       background: var(--surface) !important;
       color: var(--text) !important;
@@ -190,10 +187,11 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
     }
     .leaflet-popup-tip { background: var(--surface) !important; }
-    .popup-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-    .popup-cat  { font-family: 'DM Mono', monospace; font-size: 11px; margin-bottom: 6px; }
+    .popup-name { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+    .popup-cat  { font-family: 'DM Mono', monospace; font-size: 11px; margin-bottom: 4px; }
+    .popup-stars { font-size: 14px; color: var(--star); margin-bottom: 5px; }
     .popup-note { font-size: 12px; color: #aaa; margin-bottom: 8px; line-height: 1.4; }
-    .popup-del  {
+    .popup-del {
       background: none;
       border: 1px solid #ff4f4f;
       color: #ff4f4f;
@@ -206,10 +204,52 @@
     }
     .popup-del:hover { background: rgba(255,79,79,0.12); }
 
+    /* List panel */
+    .list-panel {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-radius: 16px 16px 0 0;
+      z-index: 500;
+      transition: transform 0.3s ease;
+      max-height: 55vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .list-panel.collapsed { transform: translateY(calc(100% - 44px)); }
+    .list-handle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .list-handle-title { font-size: 13px; font-weight: 700; }
+    .list-handle-meta  { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+    .list-scroll { overflow-y: auto; padding-bottom: 16px; }
+    .place-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .place-row:hover { background: rgba(255,255,255,0.03); }
+    .place-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .place-info { flex: 1; min-width: 0; }
+    .place-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .place-comment { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .place-stars { font-size: 12px; color: var(--star); flex-shrink: 0; }
+
     /* Toast */
     .toast {
       position: fixed;
-      bottom: 90px;
+      bottom: 230px;
       left: 50%;
       transform: translateX(-50%) translateY(80px);
       background: var(--surface);
@@ -232,15 +272,14 @@
   <h1>Ma<span>drid</span></h1>
   <div class="filters">
     <button class="filter-btn active-all" onclick="setFilter('all', this)">Tous</button>
-    <button class="filter-btn" onclick="setFilter('resto', this)">🍽 Restos</button>
-    <button class="filter-btn" onclick="setFilter('courses', this)">🛒 Courses</button>
-    <button class="filter-btn" onclick="setFilter('sympa', this)">⭐ Sympa</button>
+    <button class="filter-btn" onclick="setFilter('resto', this)">🍽</button>
+    <button class="filter-btn" onclick="setFilter('courses', this)">🛒</button>
+    <button class="filter-btn" onclick="setFilter('sympa', this)">⭐</button>
   </div>
 </div>
 
 <div id="map"></div>
 <div class="add-hint" id="addHint">Touche la carte pour placer un endroit</div>
-
 <button class="fab" id="fab" onclick="toggleAddMode()" title="Ajouter un endroit">＋</button>
 
 <!-- Modal ajout -->
@@ -253,12 +292,22 @@
       <option value="courses">🛒 Courses</option>
       <option value="sympa">⭐ Endroit sympa</option>
     </select>
-    <textarea id="placeNote" placeholder="Notes (optionnel)…"></textarea>
+    <div class="star-row" id="modalStars"></div>
+    <textarea id="placeNote" placeholder="Commentaire (optionnel)…"></textarea>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Annuler</button>
       <button class="btn-save" onclick="savePlace()">Enregistrer</button>
     </div>
   </div>
+</div>
+
+<!-- Liste -->
+<div class="list-panel" id="listPanel">
+  <div class="list-handle" onclick="toggleList()">
+    <span class="list-handle-title">Mes endroits</span>
+    <span class="list-handle-meta" id="listCount">0 endroit</span>
+  </div>
+  <div class="list-scroll" id="placesList"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -284,22 +333,41 @@
   const db  = getFirestore(app);
   const col = collection(db, "places");
 
-  // ── Map ──────────────────────────────────────────────────────────────────
-  const map = L.map('map').setView([40.4168, -3.7038], 15);
+  // ── Map ───────────────────────────────────────────────────────────────────
+  // Centré sur l'aéroport Adolfo Suárez de Madrid
+  const map = L.map('map').setView([40.4583, -3.4847], 15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(map);
 
-  // ── State ────────────────────────────────────────────────────────────────
-  let addMode    = false;
+  // ── State ─────────────────────────────────────────────────────────────────
+  let addMode       = false;
   let pendingLatLng = null;
   let currentFilter = 'all';
-  let markers = {};
+  let selectedStars = 3;
+  let markers       = {};
+  let places        = [];
+  let listCollapsed = false;
 
   const catColors = { resto: '#ff4444', courses: '#44cc66', sympa: '#4488ff' };
   const catLabels = { resto: '🍽 Restaurant', courses: '🛒 Courses', sympa: '⭐ Sympa' };
 
-  // ── Add mode ─────────────────────────────────────────────────────────────
+  // ── Stars ─────────────────────────────────────────────────────────────────
+  function renderModalStars(val) {
+    const container = document.getElementById('modalStars');
+    container.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'star-btn' + (i <= val ? ' active' : '');
+      btn.textContent = '★';
+      btn.onclick = () => { selectedStars = i; renderModalStars(i); };
+      container.appendChild(btn);
+    }
+  }
+  renderModalStars(selectedStars);
+
+  // ── Add mode ──────────────────────────────────────────────────────────────
   window.toggleAddMode = function() {
     addMode = !addMode;
     document.getElementById('fab').classList.toggle('active', addMode);
@@ -313,10 +381,12 @@
     document.getElementById('placeName').value = '';
     document.getElementById('placeNote').value = '';
     document.getElementById('placeCat').value = 'resto';
+    selectedStars = 3;
+    renderModalStars(3);
     document.getElementById('modalOverlay').classList.remove('hidden');
   });
 
-  // ── Modal ────────────────────────────────────────────────────────────────
+  // ── Modal ─────────────────────────────────────────────────────────────────
   window.closeModal = function() {
     document.getElementById('modalOverlay').classList.add('hidden');
     pendingLatLng = null;
@@ -330,6 +400,7 @@
     try {
       await addDoc(col, {
         name, cat, note,
+        stars: selectedStars,
         lat: pendingLatLng.lat,
         lng: pendingLatLng.lng,
         createdAt: serverTimestamp()
@@ -340,7 +411,7 @@
     } catch(e) { showToast('Erreur : ' + e.message); }
   };
 
-  // ── Filter ───────────────────────────────────────────────────────────────
+  // ── Filter ────────────────────────────────────────────────────────────────
   window.setFilter = function(filter, btn) {
     currentFilter = filter;
     document.querySelectorAll('.filter-btn').forEach(b => b.className = 'filter-btn');
@@ -349,28 +420,70 @@
       if (filter === 'all' || filter === cat) marker.addTo(map);
       else map.removeLayer(marker);
     });
+    renderList();
   };
 
-  // ── Marker factory ───────────────────────────────────────────────────────
+  // ── Marker ────────────────────────────────────────────────────────────────
   function makeIcon(cat) {
     const color = catColors[cat] || '#888';
     return L.divIcon({
       className: '',
-      html: `<div class="marker-dot" style="background:${color};width:18px;height:18px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>`,
+      html: `<div style="background:${color};width:18px;height:18px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>`,
       iconSize: [18, 18],
       iconAnchor: [9, 9],
-      popupAnchor: [0, -12]
+      popupAnchor: [0, -14]
     });
   }
 
-  // ── Delete ───────────────────────────────────────────────────────────────
+  // ── Delete ────────────────────────────────────────────────────────────────
   window.deletePlace = async function(id) {
     if (!confirm('Supprimer cet endroit ?')) return;
     await deleteDoc(doc(db, 'places', id));
     showToast('Endroit supprimé');
   };
 
-  // ── Realtime ─────────────────────────────────────────────────────────────
+  // ── List ──────────────────────────────────────────────────────────────────
+  window.toggleList = function() {
+    listCollapsed = !listCollapsed;
+    document.getElementById('listPanel').classList.toggle('collapsed', listCollapsed);
+  };
+
+  function renderList() {
+    const filtered = currentFilter === 'all' ? places : places.filter(p => p.cat === currentFilter);
+    const container = document.getElementById('placesList');
+    const countEl   = document.getElementById('listCount');
+    countEl.textContent = `${filtered.length} endroit${filtered.length > 1 ? 's' : ''}`;
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div style="padding:20px;text-align:center;font-family:\'DM Mono\',monospace;font-size:12px;color:var(--muted)">Aucun endroit</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    filtered.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'place-row';
+      div.onclick = () => {
+        if (markers[item.id]) {
+          map.flyTo([item.lat, item.lng], 17);
+          markers[item.id].marker.openPopup();
+          if (!listCollapsed) toggleList();
+        }
+      };
+      const stars = '★'.repeat(item.stars || 0) + '☆'.repeat(5 - (item.stars || 0));
+      div.innerHTML = `
+        <div class="place-dot" style="background:${catColors[item.cat] || '#888'}"></div>
+        <div class="place-info">
+          <div class="place-name">${escHtml(item.name)}</div>
+          ${item.note ? `<div class="place-comment">${escHtml(item.note)}</div>` : ''}
+        </div>
+        <div class="place-stars">${stars}</div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // ── Realtime ──────────────────────────────────────────────────────────────
   onSnapshot(col, (snapshot) => {
     snapshot.docChanges().forEach(change => {
       const id = change.doc.id;
@@ -378,24 +491,28 @@
 
       if (change.type === 'removed') {
         if (markers[id]) { map.removeLayer(markers[id].marker); delete markers[id]; }
-        return;
-      }
-
-      if (change.type === 'added') {
+        places = places.filter(p => p.id !== id);
+      } else if (change.type === 'added') {
+        const starsHtml = '★'.repeat(d.stars || 0) + '☆'.repeat(5 - (d.stars || 0));
         const marker = L.marker([d.lat, d.lng], { icon: makeIcon(d.cat) });
         marker.bindPopup(`
           <div class="popup-name">${escHtml(d.name)}</div>
           <div class="popup-cat" style="color:${catColors[d.cat]}">${catLabels[d.cat] || d.cat}</div>
+          <div class="popup-stars">${starsHtml}</div>
           ${d.note ? `<div class="popup-note">${escHtml(d.note)}</div>` : ''}
           <button class="popup-del" onclick="deletePlace('${id}')">Supprimer</button>
         `);
         if (currentFilter === 'all' || currentFilter === d.cat) marker.addTo(map);
         markers[id] = { marker, cat: d.cat };
+        places.push({ id, ...d });
+      } else if (change.type === 'modified') {
+        places = places.map(p => p.id === id ? { id, ...d } : p);
       }
     });
+    renderList();
   });
 
-  // ── Utils ────────────────────────────────────────────────────────────────
+  // ── Utils ─────────────────────────────────────────────────────────────────
   function escHtml(str) {
     return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
